@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mission Control – Alla i Rad & Synliga</title>
+    <title>MISSION PYRAMID</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -15,6 +15,7 @@
             --pending: #ff2d55;
             --text: #e0e0e0;
             --border: #333;
+            --glow: rgba(0, 255, 136, 0.3);
         }
 
         * {
@@ -24,383 +25,343 @@
         }
 
         body {
-            background: linear-gradient(135deg, #0a0a0a 0%, #1a0033 100%);
+            background: radial-gradient(circle at center, #1a0033 0%, #0a0a0a 100%);
             color: var(--text);
             font-family: 'Roboto Mono', monospace;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            padding: 1rem;
         }
 
         header {
             text-align: center;
             padding: 1.5rem 1rem;
-            background: rgba(0, 0, 0, 0.75);
-            backdrop-filter: blur(12px);
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(15px);
             border-bottom: 1px solid var(--border);
             position: sticky;
             top: 0;
             z-index: 100;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 6px 30px rgba(0, 0, 0, 0.4);
         }
 
         h1 {
             font-family: 'Orbitron', sans-serif;
-            font-size: 2.6rem;
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            font-size: 3.2rem;
+            background: linear-gradient(90deg, var(--primary), var(--secondary), var(--primary));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 25px rgba(0, 255, 136, 0.5);
-            margin-bottom: 0.3rem;
+            text-shadow: 0 0 30px rgba(0, 255, 136, 0.6);
+            margin-bottom: 0.4rem;
+            animation: title-glow 3s infinite alternate;
         }
 
         .subtitle {
-            font-size: 1rem;
-            opacity: 0.85;
-            letter-spacing: 1.5px;
+            font-size: 1.1rem;
+            opacity: 0.9;
+            letter-spacing: 2px;
+            color: var(--primary);
+            text-shadow: 0 0 10px var(--glow);
         }
 
-        .main-content {
+        .pyramid-container {
             flex: 1;
             display: flex;
             flex-direction: column;
-            gap: 1.5rem;
-            padding: 1.5rem;
-            max-width: 100vw;
-            overflow: hidden;
+            justify-content: center;
+            align-items: center;
+            gap: 2rem;
+            padding: 2rem 1rem;
+            max-width: 100%;
         }
 
-        /* MISSIONS PÅ RAD – ALLA SYNS SAMTIDIGT */
-        .missions-row {
+        /* PYRAMID ROWS */
+        .pyramid-row {
             display: flex;
             justify-content: center;
-            gap: 1.5rem;
-            flex-wrap: nowrap;
-            padding: 0.5rem 0;
-            overflow: hidden;
+            gap: 2rem;
+            width: 100%;
+        }
+
+        .pyramid-row:nth-child(1) { /* 1 card */
+            justify-content: center;
+        }
+
+        .pyramid-row:nth-child(2) { /* 2 cards */
+            gap: 3rem;
+        }
+
+        .pyramid-row:nth-child(3) { /* 2 cards */
+            gap: 2.5rem;
         }
 
         .mission-card {
             background: var(--card-bg);
             border: 1px solid var(--border);
-            border-radius: 14px;
-            padding: 1.4rem;
-            min-width: 260px;
-            max-width: 300px;
-            flex: 1;
+            border-radius: 18px;
+            padding: 2rem 1.8rem;
             position: relative;
             overflow: hidden;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             cursor: pointer;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            min-height: 180px;
+            flex: 1;
+            max-width: 380px;
         }
 
         .mission-card:hover {
-            transform: translateY(-8px) scale(1.05);
-            box-shadow: 0 20px 40px rgba(0, 255, 136, 0.3);
+            transform: translateY(-15px) scale(1.08);
+            box-shadow: 0 30px 60px rgba(0, 255, 136, 0.4);
             border-color: var(--primary);
             z-index: 10;
         }
 
         .mission-card.completed {
             border-color: var(--completed);
-            background: linear-gradient(135deg, rgba(0, 255, 136, 0.18), rgba(0, 255, 136, 0.08));
-            box-shadow: 0 0 30px rgba(0, 255, 136, 0.25);
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.25), rgba(0, 255, 136, 0.1));
+            box-shadow: 0 0 50px rgba(0, 255, 136, 0.4);
         }
 
         .mission-card.completed::before {
             content: '';
             position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: linear-gradient(45deg, transparent 30%, rgba(0, 255, 136, 0.15) 50%, transparent 70%);
-            animation: scan 2.5s infinite;
+            top: -50%; left: -50%; right: -50%; bottom: -50%;
+            background: radial-gradient(circle, rgba(0, 255, 136, 0.2) 0%, transparent 70%);
+            animation: energy-pulse 3s infinite;
             pointer-events: none;
         }
 
         .mission-number {
             font-family: 'Orbitron', sans-serif;
-            font-size: 2.1rem;
+            font-size: 3.5rem;
             font-weight: 900;
             color: var(--primary);
-            text-shadow: 0 0 15px rgba(0, 255, 136, 0.7);
-            text-align: center;
+            text-shadow: 0 0 20px rgba(0, 255, 136, 0.8);
+            margin-bottom: 0.8rem;
+            position: relative;
         }
 
         .mission-card.completed .mission-number {
             color: var(--completed);
-            text-shadow: 0 0 25px rgba(0, 255, 136, 1);
-            animation: glow-pulse 2s infinite alternate;
+            text-shadow: 0 0 35px rgba(0, 255, 136, 1);
+            animation: number-glow 2s infinite alternate;
         }
 
         .mission-title {
-            font-size: 1.15rem;
-            margin: 0.5rem 0;
+            font-size: 1.3rem;
+            margin: 0.6rem 0;
             font-weight: 700;
-            text-align: center;
-            letter-spacing: 0.5px;
+            letter-spacing: 1px;
         }
 
         .mission-status {
             display: flex;
-            justify-content: center;
             align-items: center;
-            gap: 0.5rem;
-            font-size: 0.9rem;
+            gap: 0.6rem;
+            font-size: 1rem;
             font-weight: 600;
+            margin-top: 0.5rem;
         }
 
         .status-indicator {
-            width: 12px;
-            height: 12px;
+            width: 14px;
+            height: 14px;
             border-radius: 50%;
             background: var(--pending);
-            box-shadow: 0 0 12px var(--pending);
-            transition: all 0.3s;
+            box-shadow: 0 0 15px var(--pending);
+            transition: all 0.4s;
         }
 
         .mission-card.completed .status-indicator {
             background: var(--completed);
-            box-shadow: 0 0 25px var(--completed);
-            animation: pulse 1.8s infinite;
-        }
-
-        /* MAP SECTION */
-        .map-section {
-            background: rgba(0, 0, 0, 0.6);
-            border-radius: 16px;
-            padding: 1.5rem;
-            border: 1px solid var(--border);
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .map-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
-
-        .map-title {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 1.7rem;
-            color: var(--primary);
-            text-shadow: 0 0 18px rgba(0, 255, 136, 0.6);
+            box-shadow: 0 0 30px var(--completed);
+            animation: pulse 1.5s infinite;
         }
 
         .completion-counter {
-            background: rgba(0, 255, 136, 0.15);
+            position: fixed;
+            top: 50%;
+            right: 2rem;
+            transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.7);
             color: var(--completed);
-            padding: 0.5rem 1.2rem;
+            padding: 1rem 1.5rem;
             border-radius: 50px;
-            font-size: 1rem;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.8rem;
             font-weight: 700;
-            border: 1px solid var(--completed);
-            min-width: 110px;
+            border: 2px solid var(--completed);
+            box-shadow: 0 0 30px rgba(0, 255, 136, 0.4);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            min-width: 120px;
             text-align: center;
-            box-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
-        }
-
-        .map-wrapper {
-            position: relative;
-            border: 2px solid var(--border);
-            border-radius: 14px;
-            overflow: hidden;
-            background: #000;
-            box-shadow: inset 0 0 35px rgba(0, 0, 0, 0.8);
-            flex: 1;
-            min-height: 300px;
-        }
-
-        .map-wrapper::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: 
-                linear-gradient(45deg, transparent 49%, rgba(0, 255, 136, 0.1) 50%, transparent 51%),
-                linear-gradient(-45deg, transparent 49%, rgba(0, 184, 255, 0.1) 50%, transparent 51%);
-            background-size: 35px 35px;
-            pointer-events: none;
-            z-index: 1;
-            animation: grid-move 12s linear infinite;
-        }
-
-        .map-image {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            display: block;
-            filter: brightness(1.15) contrast(1.25) saturate(1.15);
-            transition: filter 0.4s;
-        }
-
-        .map-image:hover {
-            filter: brightness(1.3) contrast(1.35) saturate(1.3);
         }
 
         .keyboard-hint {
             text-align: center;
             margin: 1rem 0;
-            font-size: 0.95rem;
+            font-size: 1rem;
             opacity: 0.9;
             font-style: italic;
             padding: 0.5rem;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            max-width: 600px;
+            margin: 1rem auto;
         }
 
         .keyboard-hint kbd {
             background: var(--card-bg);
             color: var(--primary);
-            padding: 0.3rem 0.6rem;
-            border-radius: 6px;
+            padding: 0.4rem 0.8rem;
+            border-radius: 8px;
             border: 1px solid var(--border);
             font-family: 'Roboto Mono', monospace;
-            font-size: 0.9rem;
-            margin: 0 0.2rem;
-            box-shadow: 0 0 10px rgba(0, 255, 136, 0.2);
+            font-size: 1rem;
+            margin: 0 0.3rem;
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
+            font-weight: bold;
         }
 
         @keyframes pulse {
             0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.3); }
+            50% { transform: scale(1.4); }
         }
 
-        @keyframes scan {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(100%); }
+        @keyframes energy-pulse {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(1.2); }
         }
 
-        @keyframes grid-move {
-            0% { background-position: 0 0; }
-            100% { background-position: 70px 70px; }
+        @keyframes number-glow {
+            from { text-shadow: 0 0 20px rgba(0, 255, 136, 0.8); }
+            to { text-shadow: 0 0 40px rgba(0, 255, 136, 1); }
         }
 
-        @keyframes glow-pulse {
-            from { text-shadow: 0 0 15px rgba(0, 255, 136, 0.8); }
-            to { text-shadow: 0 0 30px rgba(0, 255, 136, 1); }
+        @keyframes title-glow {
+            from { text-shadow: 0 0 20px rgba(0, 255, 136, 0.5); }
+            to { text-shadow: 0 0 40px rgba(0, 255, 136, 0.8); }
         }
 
-        /* RESPONSIV – ALLA SYNS PÅ ALLA SKÄRMAR */
-        @media (max-width: 1400px) {
-            .mission-card { min-width: 220px; max-width: 260px; }
-            .mission-number { font-size: 1.9rem; }
-        }
-
+        /* RESPONSIV PYRAMID */
         @media (max-width: 1200px) {
-            .mission-card { min-width: 200px; max-width: 240px; }
-            h1 { font-size: 2.3rem; }
+            .mission-card { padding: 1.8rem 1.5rem; min-height: 160px; }
+            .mission-number { font-size: 3rem; }
+            .mission-title { font-size: 1.2rem; }
+            .pyramid-row:nth-child(2) { gap: 2rem; }
         }
 
         @media (max-width: 992px) {
-            .missions-row { gap: 1rem; }
-            .mission-card { min-width: 180px; padding: 1.2rem; }
-            .mission-number { font-size: 1.8rem; }
-            .mission-title { font-size: 1.05rem; }
+            .pyramid-row { gap: 1.5rem; }
+            .mission-card { padding: 1.5rem; min-height: 140px; }
+            .mission-number { font-size: 2.6rem; }
+            .mission-title { font-size: 1.1rem; }
+            .completion-counter { font-size: 1.5rem; padding: 0.8rem 1.2rem; right: 1rem; }
         }
 
         @media (max-width: 768px) {
-            .missions-row { gap: 0.8rem; }
-            .mission-card { min-width: 160px; padding: 1rem; }
-            .mission-number { font-size: 1.6rem; }
-            .mission-title { font-size: 0.95rem; }
-            .map-title { font-size: 1.4rem; }
-            .completion-counter { font-size: 0.9rem; padding: 0.4rem 1rem; }
+            h1 { font-size: 2.5rem; }
+            .pyramid-container { gap: 1.5rem; padding: 1rem; }
+            .pyramid-row { gap: 1rem; }
+            .mission-card { padding: 1.2rem; min-height: 120px; max-width: 280px; }
+            .mission-number { font-size: 2.2rem; }
+            .mission-title { font-size: 1rem; }
+            .mission-status { font-size: 0.9rem; }
+            .status-indicator { width: 12px; height: 12px; }
         }
 
         @media (max-width: 576px) {
-            .mission-card { min-width: 140px; padding: 0.9rem; }
-            .mission-number { font-size: 1.4rem; }
-            .mission-title { font-size: 0.85rem; }
-            .mission-status { font-size: 0.8rem; }
-            .status-indicator { width: 10px; height: 10px; }
-            h1 { font-size: 2rem; }
+            .pyramid-row:nth-child(2), .pyramid-row:nth-child(3) { gap: 0.8rem; }
+            .mission-card { padding: 1rem; min-height: 100px; max-width: 220px; }
+            .mission-number { font-size: 1.8rem; }
+            .mission-title { font-size: 0.9rem; }
+            .completion-counter { font-size: 1.3rem; padding: 0.6rem 1rem; }
+            .keyboard-hint { font-size: 0.9rem; }
+            .keyboard-hint kbd { padding: 0.3rem 0.6rem; font-size: 0.9rem; }
         }
     </style>
 </head>
 <body>
     <header>
-        <h1>MISSION CONTROL</h1>
-        <p class="subtitle">Klicka korten eller tryck 1–5 på tangentbordet</p>
+        <h1>MISSION PYRAMID</h1>
+        <p class="subtitle">Klicka eller tryck 1–5 för att aktivera</p>
     </header>
 
-    <div class="main-content">
-        <!-- MISSIONS PÅ RAD – ALLA SYNS SAMTIDIGT -->
-        <div class="missions-row">
+    <div class="pyramid-container">
+        <!-- ROW 1: Mission 1 (top) -->
+        <div class="pyramid-row">
             <div class="mission-card" data-mission="1">
                 <div class="mission-number">01</div>
                 <div class="mission-title">Fixa kablarna</div>
                 <div class="mission-status">
                     <div class="status-indicator"></div>
-                    <span class="status-text">Väntar...</span>
+                    <span class="status-text">VÄNTAR</span>
                 </div>
             </div>
+        </div>
 
+        <!-- ROW 2: Mission 2 & 3 -->
+        <div class="pyramid-row">
             <div class="mission-card" data-mission="2">
                 <div class="mission-number">02</div>
                 <div class="mission-title">Hitta koden</div>
                 <div class="mission-status">
                     <div class="status-indicator"></div>
-                    <span class="status-text">Väntar...</span>
+                    <span class="status-text">VÄNTAR</span>
                 </div>
             </div>
-
             <div class="mission-card" data-mission="3">
                 <div class="mission-number">03</div>
                 <div class="mission-title">Bla Bla Bla</div>
                 <div class="mission-status">
                     <div class="status-indicator"></div>
-                    <span class="status-text">Väntar...</span>
+                    <span class="status-text">VÄNTAR</span>
                 </div>
             </div>
+        </div>
 
+        <!-- ROW 3: Mission 4 & 5 -->
+        <div class="pyramid-row">
             <div class="mission-card" data-mission="4">
                 <div class="mission-number">04</div>
                 <div class="mission-title">Bla Bla Bla</div>
                 <div class="mission-status">
                     <div class="status-indicator"></div>
-                    <span class="status-text">Väntar...</span>
+                    <span class="status-text">VÄNTAR</span>
                 </div>
             </div>
-
             <div class="mission-card" data-mission="5">
                 <div class="mission-number">05</div>
                 <div class="mission-title">Bla Bla Bla</div>
                 <div class="mission-status">
                     <div class="status-indicator"></div>
-                    <span class="status-text">Väntar...</span>
+                    <span class="status-text">VÄNTAR</span>
                 </div>
-            </div>
-        </div>
-
-        <!-- MAP SECTION -->
-        <div class="map-section">
-            <div class="map-header">
-                <div class="map-title">STRATEGISK ÖVERSIKT</div>
-                <div class="completion-counter" id="completionCounter">0 / 5</div>
-            </div>
-            <div class="map-wrapper">
-                <img src="Map.png" alt="Karta" class="map-image" id="missionMap">
             </div>
         </div>
     </div>
 
+    <!-- Räknare -->
+    <div class="completion-counter" id="completionCounter">0 / 5</div>
+
+    <!-- Tangentbords-hint -->
     <div class="keyboard-hint">
         Tryck <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> <kbd>4</kbd> <kbd>5</kbd> för att markera uppdrag
     </div>
 
     <script>
-        // Ladda sparat tillstånd
         const savedMissions = JSON.parse(localStorage.getItem('completedMissions')) || [];
         let completedCount = 0;
 
-        // Uppdatera UI
         document.querySelectorAll('.mission-card').forEach(card => {
             const missionId = card.dataset.mission;
             if (savedMissions.includes(missionId)) {
@@ -410,7 +371,6 @@
             card.addEventListener('click', () => toggleMission(card));
         });
 
-        // Tangentbord
         document.addEventListener('keydown', e => {
             if (e.key >= '1' && e.key <= '5') {
                 const card = document.querySelector(`.mission-card[data-mission="${e.key}"]`);
@@ -424,7 +384,7 @@
 
             if (wasCompleted) {
                 card.classList.remove('completed');
-                card.querySelector('.status-text').textContent = 'Väntar...';
+                card.querySelector('.status-text').textContent = 'VÄNTAR';
                 const index = savedMissions.indexOf(missionId);
                 if (index > -1) savedMissions.splice(index, 1);
                 completedCount--;
@@ -447,14 +407,6 @@
             document.getElementById('completionCounter').textContent = `${completedCount} / 5`;
         }
 
-        // Fallback för kartan
-        const mapImg = document.getElementById('missionMap');
-        mapImg.onerror = () => {
-            mapImg.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwMCIgaGVpZ2h0PSI1MDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjEwMDAlIiBoZWlnaHQ9IjUwMCUiIGZpbGw9IiMyMjIiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjI4IiBmaWxsPSIjYWFhIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+TGFkZGEgaW4gTWlwLnBuZyBoZXI8L3RleHQ+PC9zdmc+';
-            mapImg.alt = 'Ladda in Map.png i samma mapp';
-        };
-
-        // Initiera räknare
         updateCounter();
     </script>
 </body>
