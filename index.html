@@ -1,413 +1,523 @@
 <!DOCTYPE html>
 <html lang="sv">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MISSION PYRAMID</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary: #00ff88;
-            --secondary: #00b8ff;
-            --bg: #0a0a0a;
-            --card-bg: #1a1a1a;
-            --completed: #00ff88;
-            --pending: #ff2d55;
-            --text: #e0e0e0;
-            --border: #333;
-            --glow: rgba(0, 255, 136, 0.3);
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Galleria – Rutnät & Namngivna Butiker + Rapporter</title>
+  <style>
+    body {
+      margin: 0;
+      background: #f0f0f0;
+      font-family: Arial, sans-serif;
+      overflow-y: auto; /* Scrollbart! */
+    }
+    #top-section {
+      position: relative;
+    }
+    canvas {
+      display: block;
+      margin: 20px auto;
+      border: 3px solid #333;
+      cursor: default;
+    }
+    .info {
+      text-align: center;
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+    .legend {
+      text-align: center;
+      margin-top: 10px;
+    }
+    .worker {
+      display: inline-block;
+      margin: 0 10px;
+      padding: 5px 10px;
+      border-radius: 5px;
+      font-weight: bold;
+    }
+    .ledig { background: #90ee90; color: #000; }
+    .upptagen { background: #ff6b6b; color: #fff; }
+    .selected { box-shadow: 0 0 10px #0066ff; }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+    /* Rapportformulär – NEDANFÖR kartan */
+    #report-section {
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #fff;
+      border: 2px solid #333;
+      border-radius: 8px;
+    }
+    #report-section h2 {
+      text-align: center;
+    }
+    #report-form label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+    #report-form input, #report-form select, #report-form textarea {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    #report-form button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      background: #4CAF50;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    #report-form button:hover {
+      background: #45a049;
+    }
 
-        body {
-            background: radial-gradient(circle at center, #1a0033 0%, #0a0a0a 100%);
-            color: var(--text);
-            font-family: 'Roboto Mono', monospace;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            padding: 1rem;
-        }
+    /* Notifikationer – ÖVERST på skärmen, fixed */
+    #notifications {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 1000;
+      pointer-events: none;
+    }
+    .notif {
+      max-width: 900px;
+      margin: 10px auto;
+      padding: 15px;
+      background: #ffff99;
+      border: 2px solid #cccc00;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+      pointer-events: auto;
+      opacity: 0;
+      transition: opacity 0.5s;
+    }
+    .notif.show {
+      opacity: 1;
+    }
+    .notif .timer {
+      margin-top: 10px;
+      height: 5px;
+      background: #ccc;
+      position: relative;
+    }
+    .notif .timer-bar {
+      height: 100%;
+      background: #4CAF50;
+      width: 100%;
+      transition: width 0.1s linear;
+    }
 
-        header {
-            text-align: center;
-            padding: 1.5rem 1rem;
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(15px);
-            border-bottom: 1px solid var(--border);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            box-shadow: 0 6px 30px rgba(0, 0, 0, 0.4);
-        }
-
-        h1 {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 3.2rem;
-            background: linear-gradient(90deg, var(--primary), var(--secondary), var(--primary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 30px rgba(0, 255, 136, 0.6);
-            margin-bottom: 0.4rem;
-            animation: title-glow 3s infinite alternate;
-        }
-
-        .subtitle {
-            font-size: 1.1rem;
-            opacity: 0.9;
-            letter-spacing: 2px;
-            color: var(--primary);
-            text-shadow: 0 0 10px var(--glow);
-        }
-
-        .pyramid-container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            gap: 2rem;
-            padding: 2rem 1rem;
-            max-width: 100%;
-        }
-
-        /* PYRAMID ROWS */
-        .pyramid-row {
-            display: flex;
-            justify-content: center;
-            gap: 2rem;
-            width: 100%;
-        }
-
-        .pyramid-row:nth-child(1) { /* 1 card */
-            justify-content: center;
-        }
-
-        .pyramid-row:nth-child(2) { /* 2 cards */
-            gap: 3rem;
-        }
-
-        .pyramid-row:nth-child(3) { /* 2 cards */
-            gap: 2.5rem;
-        }
-
-        .mission-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 18px;
-            padding: 2rem 1.8rem;
-            position: relative;
-            overflow: hidden;
-            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            cursor: pointer;
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            min-height: 180px;
-            flex: 1;
-            max-width: 380px;
-        }
-
-        .mission-card:hover {
-            transform: translateY(-15px) scale(1.08);
-            box-shadow: 0 30px 60px rgba(0, 255, 136, 0.4);
-            border-color: var(--primary);
-            z-index: 10;
-        }
-
-        .mission-card.completed {
-            border-color: var(--completed);
-            background: linear-gradient(135deg, rgba(0, 255, 136, 0.25), rgba(0, 255, 136, 0.1));
-            box-shadow: 0 0 50px rgba(0, 255, 136, 0.4);
-        }
-
-        .mission-card.completed::before {
-            content: '';
-            position: absolute;
-            top: -50%; left: -50%; right: -50%; bottom: -50%;
-            background: radial-gradient(circle, rgba(0, 255, 136, 0.2) 0%, transparent 70%);
-            animation: energy-pulse 3s infinite;
-            pointer-events: none;
-        }
-
-        .mission-number {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 3.5rem;
-            font-weight: 900;
-            color: var(--primary);
-            text-shadow: 0 0 20px rgba(0, 255, 136, 0.8);
-            margin-bottom: 0.8rem;
-            position: relative;
-        }
-
-        .mission-card.completed .mission-number {
-            color: var(--completed);
-            text-shadow: 0 0 35px rgba(0, 255, 136, 1);
-            animation: number-glow 2s infinite alternate;
-        }
-
-        .mission-title {
-            font-size: 1.3rem;
-            margin: 0.6rem 0;
-            font-weight: 700;
-            letter-spacing: 1px;
-        }
-
-        .mission-status {
-            display: flex;
-            align-items: center;
-            gap: 0.6rem;
-            font-size: 1rem;
-            font-weight: 600;
-            margin-top: 0.5rem;
-        }
-
-        .status-indicator {
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-            background: var(--pending);
-            box-shadow: 0 0 15px var(--pending);
-            transition: all 0.4s;
-        }
-
-        .mission-card.completed .status-indicator {
-            background: var(--completed);
-            box-shadow: 0 0 30px var(--completed);
-            animation: pulse 1.5s infinite;
-        }
-
-        .completion-counter {
-            position: fixed;
-            top: 50%;
-            right: 2rem;
-            transform: translateY(-50%);
-            background: rgba(0, 0, 0, 0.7);
-            color: var(--completed);
-            padding: 1rem 1.5rem;
-            border-radius: 50px;
-            font-family: 'Orbitron', sans-serif;
-            font-size: 1.8rem;
-            font-weight: 700;
-            border: 2px solid var(--completed);
-            box-shadow: 0 0 30px rgba(0, 255, 136, 0.4);
-            backdrop-filter: blur(10px);
-            z-index: 1000;
-            min-width: 120px;
-            text-align: center;
-        }
-
-        .keyboard-hint {
-            text-align: center;
-            margin: 1rem 0;
-            font-size: 1rem;
-            opacity: 0.9;
-            font-style: italic;
-            padding: 0.5rem;
-            background: rgba(0, 0, 0, 0.5);
-            border-radius: 10px;
-            max-width: 600px;
-            margin: 1rem auto;
-        }
-
-        .keyboard-hint kbd {
-            background: var(--card-bg);
-            color: var(--primary);
-            padding: 0.4rem 0.8rem;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            font-family: 'Roboto Mono', monospace;
-            font-size: 1rem;
-            margin: 0 0.3rem;
-            box-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
-            font-weight: bold;
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.4); }
-        }
-
-        @keyframes energy-pulse {
-            0%, 100% { opacity: 0.3; transform: scale(1); }
-            50% { opacity: 0.6; transform: scale(1.2); }
-        }
-
-        @keyframes number-glow {
-            from { text-shadow: 0 0 20px rgba(0, 255, 136, 0.8); }
-            to { text-shadow: 0 0 40px rgba(0, 255, 136, 1); }
-        }
-
-        @keyframes title-glow {
-            from { text-shadow: 0 0 20px rgba(0, 255, 136, 0.5); }
-            to { text-shadow: 0 0 40px rgba(0, 255, 136, 0.8); }
-        }
-
-        /* RESPONSIV PYRAMID */
-        @media (max-width: 1200px) {
-            .mission-card { padding: 1.8rem 1.5rem; min-height: 160px; }
-            .mission-number { font-size: 3rem; }
-            .mission-title { font-size: 1.2rem; }
-            .pyramid-row:nth-child(2) { gap: 2rem; }
-        }
-
-        @media (max-width: 992px) {
-            .pyramid-row { gap: 1.5rem; }
-            .mission-card { padding: 1.5rem; min-height: 140px; }
-            .mission-number { font-size: 2.6rem; }
-            .mission-title { font-size: 1.1rem; }
-            .completion-counter { font-size: 1.5rem; padding: 0.8rem 1.2rem; right: 1rem; }
-        }
-
-        @media (max-width: 768px) {
-            h1 { font-size: 2.5rem; }
-            .pyramid-container { gap: 1.5rem; padding: 1rem; }
-            .pyramid-row { gap: 1rem; }
-            .mission-card { padding: 1.2rem; min-height: 120px; max-width: 280px; }
-            .mission-number { font-size: 2.2rem; }
-            .mission-title { font-size: 1rem; }
-            .mission-status { font-size: 0.9rem; }
-            .status-indicator { width: 12px; height: 12px; }
-        }
-
-        @media (max-width: 576px) {
-            .pyramid-row:nth-child(2), .pyramid-row:nth-child(3) { gap: 0.8rem; }
-            .mission-card { padding: 1rem; min-height: 100px; max-width: 220px; }
-            .mission-number { font-size: 1.8rem; }
-            .mission-title { font-size: 0.9rem; }
-            .completion-counter { font-size: 1.3rem; padding: 0.6rem 1rem; }
-            .keyboard-hint { font-size: 0.9rem; }
-            .keyboard-hint kbd { padding: 0.3rem 0.6rem; font-size: 0.9rem; }
-        }
-    </style>
+    /* Flash på kartan */
+    .flash {
+      position: absolute;
+      background: rgba(255, 255, 0, 0.5);
+      border-radius: 50%;
+      pointer-events: none;
+      animation: flashAnim 0.5s ease-out forwards;
+    }
+    @keyframes flashAnim {
+      0% { transform: scale(0.5); opacity: 0.8; }
+      100% { transform: scale(3); opacity: 0; }
+    }
+  </style>
 </head>
 <body>
-    <header>
-        <h1>MISSION PYRAMID</h1>
-        <p class="subtitle">Klicka eller tryck 1–5 för att aktivera</p>
-    </header>
+  <div id="notifications"></div>
 
-    <div class="pyramid-container">
-        <!-- ROW 1: Mission 1 (top) -->
-        <div class="pyramid-row">
-            <div class="mission-card" data-mission="1">
-                <div class="mission-number">01</div>
-                <div class="mission-title">Fixa kablarna</div>
-                <div class="mission-status">
-                    <div class="status-indicator"></div>
-                    <span class="status-text">VÄNTAR</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- ROW 2: Mission 2 & 3 -->
-        <div class="pyramid-row">
-            <div class="mission-card" data-mission="2">
-                <div class="mission-number">02</div>
-                <div class="mission-title">Hitta koden</div>
-                <div class="mission-status">
-                    <div class="status-indicator"></div>
-                    <span class="status-text">VÄNTAR</span>
-                </div>
-            </div>
-            <div class="mission-card" data-mission="3">
-                <div class="mission-number">03</div>
-                <div class="mission-title">Lös Pusslet</div>
-                <div class="mission-status">
-                    <div class="status-indicator"></div>
-                    <span class="status-text">VÄNTAR</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- ROW 3: Mission 4 & 5 -->
-        <div class="pyramid-row">
-            <div class="mission-card" data-mission="4">
-                <div class="mission-number">04</div>
-                <div class="mission-title">Lös Alla Gåtor</div>
-                <div class="mission-status">
-                    <div class="status-indicator"></div>
-                    <span class="status-text">VÄNTAR</span>
-                </div>
-            </div>
-            <div class="mission-card" data-mission="5">
-                <div class="mission-number">05</div>
-                <div class="mission-title">Hitta Korten Och Sortera Dom</div>
-                <div class="mission-status">
-                    <div class="status-indicator"></div>
-                    <span class="status-text">VÄNTAR</span>
-                </div>
-            </div>
-        </div>
+  <div id="top-section">
+    <div class="info">
+      <strong>Klicka på en arbetare → Klicka på mål → Går och kan STANNA mitt på vägen!</strong><br>
+      Tangent 1–5: Växla Ledig/Upptaget
     </div>
+    <canvas id="map" width="900" height="600"></canvas>
+    <div class="legend" id="legend"></div>
+  </div>
 
-    <!-- Räknare -->
-    <div class="completion-counter" id="completionCounter">0 / 5</div>
+  <!-- RAPPORTFORMULÄR – Scrolla ner för att se! -->
+  <div id="report-section">
+    <h2>Skapa Rapport</h2>
+    <form id="report-form">
+      <label for="title">Titel:</label>
+      <input type="text" id="title" required />
 
-    <!-- Tangentbords-hint -->
-    <div class="keyboard-hint">
-        Tryck <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> <kbd>4</kbd> <kbd>5</kbd> för att markera uppdrag
-    </div>
+      <label for="problem">Problem:</label>
+      <textarea id="problem" rows="4" required></textarea>
 
-    <script>
-        const savedMissions = JSON.parse(localStorage.getItem('completedMissions')) || [];
-        let completedCount = 0;
+      <label for="priority">Prioritet:</label>
+      <select id="priority" required>
+        <option value="">Välj...</option>
+        <option value="Låg">Låg</option>
+        <option value="Medel">Medel</option>
+        <option value="Hög">Hög</option>
+      </select>
 
-        document.querySelectorAll('.mission-card').forEach(card => {
-            const missionId = card.dataset.mission;
-            if (savedMissions.includes(missionId)) {
-                markAsCompleted(card);
-                completedCount++;
-            }
-            card.addEventListener('click', () => toggleMission(card));
+      <button type="submit">Skicka Rapport</button>
+    </form>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('map');
+    const ctx = canvas.getContext('2d');
+    const legend = document.getElementById('legend');
+    const topSection = document.getElementById('top-section');
+    const notifications = document.getElementById('notifications');
+    const reportForm = document.getElementById('report-form');
+
+    // Arbetare – LÅNGSAM
+    const workers = [
+      { id: 1, x: 150, y: 150, status: 'Ledig', selected: false, path: [], target: null, speed: 0.3 },
+      { id: 2, x: 400, y: 100, status: 'Ledig', selected: false, path: [], target: null, speed: 0.3 },
+      { id: 3, x: 700, y: 200, status: 'Ledig', selected: false, path: [], target: null, speed: 0.3 },
+      { id: 4, x: 300, y: 400, status: 'Ledig', selected: false, path: [], target: null, speed: 0.3 },
+      { id: 5, x: 600, y: 450, status: 'Ledig', selected: false, path: [], target: null, speed: 0.3 }
+    ];
+
+    // NAMNGIVNA BUTIKER
+    const shops = [
+      {x: 50,  y: 50,  w: 150, h: 120, name: "H&M"},
+      {x: 250, y: 50,  w: 120, h: 100, name: "Zara"},
+      {x: 400, y: 50,  w: 180, h: 80,  name: "Elgiganten"},
+      {x: 620, y: 50,  w: 140, h: 100, name: "Åhléns"},
+      {x: 50,  y: 200, w: 100, h: 150, name: "Espresso House"},
+      {x: 180, y: 200, w: 160, h: 130, name: "Guldfynd"},
+      {x: 380, y: 180, w: 200, h: 120, name: "McDonald's"},
+      {x: 620, y: 180, w: 180, h: 140, name: "BR Leksaker"},
+      {x: 50,  y: 380, w: 180, h: 140, name: "Apoteket Hjärtat"},
+      {x: 260, y: 350, w: 140, h: 160, name: "Intersport"},
+      {x: 450, y: 350, w: 160, h: 140, name: "Clas Ohlson"},
+      {x: 650, y: 380, w: 150, h: 140, name: "Jysk"}
+    ];
+
+    // KORSNINGAR (samma rutnät)
+    const intersections = [
+      {x: 200, y: 170}, {x: 380, y: 170}, {x: 590, y: 170}, {x: 770, y: 170},
+      {x: 200, y: 330}, {x: 380, y: 330}, {x: 590, y: 330}, {x: 770, y: 330},
+      {x: 200, y: 520}, {x: 380, y: 520}, {x: 590, y: 520}, {x: 770, y: 520},
+      {x: 450, y: 30}, {x: 450, y: 570}
+    ];
+
+    // Hitta närmaste korsning
+    function nearestIntersection(x, y) {
+      let minDist = Infinity;
+      let best = null;
+      intersections.forEach(p => {
+        const dist = Math.hypot(p.x - x, p.y - y);
+        if (dist < minDist) {
+          minDist = dist;
+          best = p;
+        }
+      });
+      return { point: best, dist: minDist };
+    }
+
+    // A* – ger korsningar
+    function findPath(start, goal) {
+      const openSet = [];
+      const cameFrom = {};
+      const gScore = {};
+      const fScore = {};
+
+      const key = p => `${p.x},${p.y}`;
+      const startKey = key(start);
+      const goalKey = key(goal);
+
+      gScore[startKey] = 0;
+      fScore[startKey] = Math.hypot(goal.x - start.x, goal.y - start.y);
+      openSet.push({ point: start, f: fScore[startKey] });
+
+      const neighbors = (p) => {
+        const dirs = [];
+        intersections.forEach(ip => {
+          if (ip.y === p.y && Math.abs(ip.x - p.x) > 0) dirs.push(ip);
+          if (ip.x === p.x && Math.abs(ip.y - p.y) > 0) dirs.push(ip);
         });
-
-        document.addEventListener('keydown', e => {
-            if (e.key >= '1' && e.key <= '5') {
-                const card = document.querySelector(`.mission-card[data-mission="${e.key}"]`);
-                if (card) toggleMission(card);
-            }
+        return dirs.filter(n => {
+          const mx = (p.x + n.x) / 2, my = (p.y + n.y) / 2;
+          return !shops.some(s => mx >= s.x && mx <= s.x + s.w && my >= s.y && my <= s.y + s.h);
         });
+      };
 
-        function toggleMission(card) {
-            const missionId = card.dataset.mission;
-            const wasCompleted = card.classList.contains('completed');
+      while (openSet.length > 0) {
+        openSet.sort((a, b) => a.f - b.f);
+        const current = openSet.shift().point;
+        const currentKey = key(current);
 
-            if (wasCompleted) {
-                card.classList.remove('completed');
-                card.querySelector('.status-text').textContent = 'VÄNTAR';
-                const index = savedMissions.indexOf(missionId);
-                if (index > -1) savedMissions.splice(index, 1);
-                completedCount--;
-            } else {
-                markAsCompleted(card);
-                if (!savedMissions.includes(missionId)) savedMissions.push(missionId);
-                completedCount++;
+        if (currentKey === goalKey) {
+          const path = [];
+          let step = current;
+          while (step) {
+            path.unshift(step);
+            step = cameFrom[key(step)];
+          }
+          return path;
+        }
+
+        neighbors(current).forEach(neighbor => {
+          const nKey = key(neighbor);
+          const tentativeG = gScore[currentKey] + Math.hypot(neighbor.x - current.x, neighbor.y - current.y);
+
+          if (!(nKey in gScore) || tentativeG < gScore[nKey]) {
+            cameFrom[nKey] = current;
+            gScore[nKey] = tentativeG;
+            fScore[nKey] = tentativeG + Math.hypot(goal.x - neighbor.x, goal.y - neighbor.y);
+            if (!openSet.some(o => key(o.point) === nKey)) {
+              openSet.push({ point: neighbor, f: fScore[nKey] });
             }
+          }
+        });
+      }
+      return [start, goal];
+    }
 
-            updateCounter();
-            localStorage.setItem('completedMissions', JSON.stringify(savedMissions));
+    // Dela upp varje sträcka i små steg (var 30 pixlar)
+    function subdividePath(path) {
+      const finePath = [];
+      for (let i = 0; i < path.length - 1; i++) {
+        const a = path[i];
+        const b = path[i + 1];
+        const dx = b.x - a.x;
+        const dy = b.y - a.y;
+        const dist = Math.hypot(dx, dy);
+        const steps = Math.ceil(dist / 30);
+        for (let j = 0; j <= steps; j++) {
+          const t = j / steps;
+          finePath.push({
+            x: a.x + dx * t,
+            y: a.y + dy * t
+          });
         }
+      }
+      if (path.length > 0) finePath.push(path[path.length - 1]);
+      return finePath;
+    }
 
-        function markAsCompleted(card) {
-            card.classList.add('completed');
-            card.querySelector('.status-text').textContent = 'KLAR!';
+    // Rita allt
+    function drawMap() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      ctx.fillStyle = '#e8e8e8';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.fillStyle = '#d4a5a5';
+      ctx.strokeStyle = '#8b5a5a';
+      ctx.lineWidth = 3;
+      ctx.font = '12px Arial';
+      ctx.textAlign = 'center';
+      shops.forEach(shop => {
+        ctx.fillRect(shop.x, shop.y, shop.w, shop.h);
+        ctx.strokeRect(shop.x, shop.y, shop.w, shop.h);
+        ctx.fillStyle = '#000';
+        ctx.fillText(shop.name, shop.x + shop.w/2, shop.y + shop.h/2 + 5);
+        ctx.fillStyle = '#d4a5a5';
+      });
+
+      ctx.strokeStyle = '#555';
+      ctx.lineWidth = 6;
+      ctx.beginPath();
+      ctx.moveTo(0, 170); ctx.lineTo(900, 170);
+      ctx.moveTo(0, 330); ctx.lineTo(900, 330);
+      ctx.moveTo(0, 520); ctx.lineTo(900, 520);
+      ctx.moveTo(200, 0); ctx.lineTo(200, 600);
+      ctx.moveTo(380, 0); ctx.lineTo(380, 600);
+      ctx.moveTo(590, 0); ctx.lineTo(590, 600);
+      ctx.moveTo(770, 0); ctx.lineTo(770, 600);
+      ctx.stroke();
+
+      ctx.fillStyle = '#4CAF50';
+      ctx.fillRect(420, 0, 60, 30);
+      ctx.fillRect(420, 570, 60, 30);
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 14px Arial';
+      ctx.fillText("ENTRÉ", 450, 20);
+      ctx.fillText("UTRÉ", 450, 595);
+
+      workers.forEach(w => {
+        if (w.path.length > 1) {
+          ctx.strokeStyle = '#ff0000';
+          ctx.lineWidth = 2;
+          ctx.setLineDash([5, 5]);
+          ctx.beginPath();
+          ctx.moveTo(w.x, w.y);
+          w.path.forEach(p => ctx.lineTo(p.x, p.y));
+          ctx.stroke();
+          ctx.setLineDash([]);
         }
+      });
 
-        function updateCounter() {
-            document.getElementById('completionCounter').textContent = `${completedCount} / 5`;
+      workers.forEach(w => {
+        ctx.beginPath();
+        ctx.arc(w.x, w.y, 18, 0, Math.PI * 2);
+        ctx.fillStyle = w.status === 'Ledig' ? '#90ee90' : '#ff6b6b';
+        ctx.fill();
+        ctx.strokeStyle = w.selected ? '#0066ff' : '#000';
+        ctx.lineWidth = w.selected ? 4 : 2;
+        ctx.stroke();
+
+        ctx.fillStyle = '#000';
+        ctx.font = 'bold 20px Arial';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(w.id, w.x, w.y);
+
+        ctx.font = '12px Arial';
+        ctx.fillText(w.status, w.x, w.y + 30);
+      });
+
+      updateLegend();
+    }
+
+    function updateLegend() {
+      legend.innerHTML = '';
+      workers.forEach(w => {
+        const span = document.createElement('span');
+        span.className = `worker ${w.status === 'Ledig' ? 'ledig' : 'upptagen'}${w.selected ? ' selected' : ''}`;
+        span.textContent = `${w.id}: ${w.status}${w.selected ? ' (vald)' : ''}`;
+        legend.appendChild(span);
+      });
+    }
+
+    // Klick på karta
+    canvas.addEventListener('click', e => {
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      let clickedWorker = null;
+      workers.forEach(w => {
+        if (Math.hypot(w.x - x, w.y - y) < 25) {
+          clickedWorker = w;
         }
+      });
 
-        updateCounter();
-    </script>
+      if (clickedWorker) {
+        workers.forEach(w => w.selected = false);
+        clickedWorker.selected = true;
+        drawMap();
+      } else if (workers.some(w => w.selected)) {
+        const selected = workers.find(w => w.selected);
+        const nearest = nearestIntersection(x, y);
+        if (nearest.dist < 100) {
+          const start = nearestIntersection(selected.x, selected.y).point;
+          const coarsePath = findPath(start, nearest.point);
+          const finePath = subdividePath(coarsePath);
+          selected.path = finePath;
+          selected.target = nearest.point;
+          selected.selected = false;
+          selected.status = 'Upptaget';
+          drawMap();
+        }
+      }
+    });
+
+    // Tangentbord
+    document.addEventListener('keydown', e => {
+      const key = parseInt(e.key);
+      if (key >= 1 && key <= 5) {
+        const w = workers.find(w => w.id === key);
+        if (w && w.path.length === 0) {
+          w.status = w.status === 'Ledig' ? 'Upptaget' : 'Ledig';
+          drawMap();
+        }
+      }
+    });
+
+    // Animation
+    function animate() {
+      let moved = false;
+      workers.forEach(w => {
+        if (w.path.length > 0) {
+          const target = w.path[0];
+          const dx = target.x - w.x;
+          const dy = target.y - w.y;
+          const dist = Math.hypot(dx, dy);
+
+          if (dist < w.speed) {
+            w.x = target.x;
+            w.y = target.y;
+            w.path.shift();
+            if (w.path.length === 0) w.status = 'Ledig';
+            moved = true;
+          } else {
+            w.x += (dx / dist) * w.speed;
+            w.y += (dy / dist) * w.speed;
+            moved = true;
+          }
+        }
+      });
+      if (moved) drawMap();
+      requestAnimationFrame(animate);
+    }
+
+    // *** NYTT: RAPPORTSYSTEM ***
+    let reportCounter = 0;
+
+    reportForm.addEventListener('submit', e => {
+      e.preventDefault();
+      const title = document.getElementById('title').value.trim();
+      const problem = document.getElementById('problem').value.trim();
+      const priority = document.getElementById('priority').value;
+
+      if (!title || !problem || !priority) return;
+
+      reportCounter++;
+      const reportId = `report-${reportCounter}`;
+      const clickX = Math.random() * canvas.width;
+      const clickY = Math.random() * canvas.height;
+
+      // 1. Flash på kartan i 5 sek
+      const flash = document.createElement('div');
+      flash.className = 'flash';
+      flash.style.left = `${clickX - 50}px`;
+      flash.style.top = `${clickY - 50}px`;
+      flash.style.width = '100px';
+      flash.style.height = '100px';
+      topSection.appendChild(flash);
+      setTimeout(() => flash.remove(), 5000); // Synlig i 5 sek (anim 0.5s + rest)
+
+      // 2. Notifikation överst – visas EFTER 5 sek, timer 3 min
+      setTimeout(() => {
+        const notif = document.createElement('div');
+        notif.className = 'notif';
+        notif.innerHTML = `
+          <strong>${title}</strong> (Prioritet: ${priority})<br>
+          ${problem}
+          <div class="timer"><div class="timer-bar"></div></div>
+        `;
+        notifications.appendChild(notif);
+
+        setTimeout(() => notif.classList.add('show'), 100);
+
+        const timerBar = notif.querySelector('.timer-bar');
+        const startTime = Date.now();
+        const duration = 3 * 60 * 1000; // 3 min
+
+        const updateTimer = () => {
+          const elapsed = Date.now() - startTime;
+          const progress = Math.max(0, (duration - elapsed) / duration);
+          timerBar.style.width = `${progress * 100}%`;
+          if (progress > 0) {
+            requestAnimationFrame(updateTimer);
+          } else {
+            notif.classList.remove('show');
+            setTimeout(() => notif.remove(), 500);
+          }
+        };
+        updateTimer();
+      }, 5000);
+
+      // Reset form
+      reportForm.reset();
+    });
+
+    drawMap();
+    animate();
+  </script>
 </body>
 </html>
